@@ -52,32 +52,6 @@ local function highlightPlayer(player)
     end
 end
 
--- Function to remove the highlight outline and name tag for a player
-local function removeHighlight(player)
-    if player.Character then
-        local highlightBillboard = player.Character:FindFirstChild("HighlightBillboard")
-        local nameTagBillboard = player.Character:FindFirstChild("NameTagBillboard")
-        if highlightBillboard then
-            highlightBillboard:Destroy()
-        end
-        if nameTagBillboard then
-            nameTagBillboard:Destroy()
-        end
-    end
-end
-
--- Function to toggle the highlight and name tags
-local function toggleHighlight()
-    highlightEnabled = not highlightEnabled
-    for _, player in pairs(Players:GetPlayers()) do
-        if highlightEnabled then
-            highlightPlayer(player)
-        else
-            removeHighlight(player)
-        end
-    end
-end
-
 -- Highlight all existing players
 for _, player in pairs(Players:GetPlayers()) do
     highlightPlayer(player)
