@@ -1,0 +1,91 @@
+-- Get the Players service
+local Players = game:GetService("Players")
+local highlightEnabled = true
+
+-- Function to create a highlight outline and name tag for a player
+local function highlightPlayer(player)
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        -- Create a BillboardGui for the outline
+        local billboardGui = Instance.new("BillboardGui")
+        billboardGui.Name = "HighlightBillboard"
+        billboardGui.Adornee = player.Character:FindFirstChild("HumanoidRootPart")
+        billboardGui.Size = UDim2.new(4, 0, 4, 0)
+        billboardGui.AlwaysOnTop = true
+        billboardGui.Enabled = highlightEnabled
+        billboardGui.Parent = player.Character:FindFirstChild("HumanoidRootPart")
+
+        -- Function to create a line frame
+        local function createLine(size, position, parent)
+            local line = Instance.new("Frame")
+            line.Size = size
+            line.Position = position
+            line.BackgroundColor3 = Color3.new(1, 0, 0)  -- Red color
+            line.BorderSizePixel = 0
+            line.Parent = parent
+        end
+
+        -- Create the outline using lines
+        createLine(UDim2.new(1, 0, 0, 2), UDim2.new(0, 0, 0, 0), billboardGui)  -- Top line
+        createLine(UDim2.new(1, 0, 0, 2), UDim2.new(0, 0, 1, -2), billboardGui)  -- Bottom line
+        createLine(UDim2.new(0, 2, 1, 0), UDim2.new(0, 0, 0, 0), billboardGui)  -- Left line
+        createLine(UDim2.new(0, 2, 1, 0), UDim2.new(1, -2, 0, 0), billboardGui)  -- Right line
+
+        -- Create a BillboardGui for the name tag
+        local nameTagGui = Instance.new("BillboardGui")
+        nameTagGui.Name = "NameTagBillboard"
+        nameTagGui.Adornee = player.Character:FindFirstChild("HumanoidRootPart")
+        nameTagGui.Size = UDim2.new(4, 0, 1, 0)
+        nameTagGui.StudsOffset = Vector3.new(0, 3, 0)
+        nameTagGui.AlwaysOnTop = true
+        nameTagGui.Enabled = highlightEnabled
+        nameTagGui.Parent = player.Character:FindFirstChild("HumanoidRootPart")
+
+        -- Create a TextLabel for the name tag
+        local nameTag = Instance.new("TextLabel")
+        nameTag.Size = UDim2.new(1, 0, 1, 0)
+        nameTag.BackgroundTransparency = 1
+        nameTag.Text = player.Name
+        nameTag.TextColor3 = Color3.new(1, 1, 1)  -- White color
+        nameTag.TextScaled = true
+        nameTag.Font = Enum.Font.SourceSansBold
+        nameTag.Parent = nameTagGui
+    end
+end
+
+-- Function to remove the highlight outline and name tag for a player
+local function removeHighlight(player)
+    if player.Character then
+        local highlightBillboard = player.Character:FindFirstChild("HighlightBillboard")
+        local nameTagBillboard = player.Character:FindFirstChild("NameTagBillboard")
+        if highlightBillboard then
+            highlightBillboard:Destroy()
+        end
+        if nameTagBillboard then
+            nameTagBillboard:Destroy()
+        end
+    end
+end
+
+-- Function to toggle the highlight and name tags
+local function toggleHighlight()
+    highlightEnabled = not highlightEnabled
+    for _, player in pairs(Players:GetPlayers()) do
+        if highlightEnabled then
+            highlightPlayer(player)
+        else
+            removeHighlight(player)
+        end
+    end
+end
+
+-- Highlight all existing players
+for _, player in pairs(Players:GetPlayers()) do
+    highlightPlayer(player)
+end
+
+-- Highlight players that join after the script runs
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function(character)
+        highlightPlayer(player)
+    end)
+end)
