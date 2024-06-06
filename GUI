@@ -57,6 +57,8 @@ game:GetService("UserInputService").jumpRequest:Connect(function()
 end)
    end,
 })
+
+
 local Slider = MainTab:CreateSlider({
    Name = "walk speed slider",
    Range = {0, 300},
@@ -2128,13 +2130,13 @@ local Button = HubTab:CreateButton({
 })
 
 local Slider = MainTab:CreateSlider({
-   Name = "Fov",
-   Range = {40, 120},
+   Name = "FOV",
+   Range = {1, 120},
    Increment = 1,
-   Suffix = "Fov",
-   CurrentValue = 70,
+   Suffix = "speds",
+   CurrentValue = 69,
    Flag = "Fov", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
    Callback = function(Value)
-        Workspace.CurrentCamera.FieldOfView = (Value)
+        Workspace.Camera.FieldOfView = (Value)
    end,
 })
