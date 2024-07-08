@@ -40,7 +40,7 @@ end
 
 --[[ end configs, don't edit this especially if you have no idea what Lua is lmao ]]--
 
-local SkibidiBotversion = "v6.9.4.2.0 Public Beta Release/Made by れ工已已巨尺゜やヤ"
+local SkibidiBotversion = "v6.9.4.2.0 Public Beta Release/Made NOT by me/its just lunarbot"
 local SkibidiBotchangelogs = "Added a few commands!"
 
 local gameData = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId)
