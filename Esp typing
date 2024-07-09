@@ -1,0 +1,118 @@
+-- Services
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+-- Variables
+local localPlayer = Players.LocalPlayer
+local camera = game.Workspace.CurrentCamera
+local espEnabled = true
+local fov = 70
+
+-- Create ScreenGui
+local screenGui = Instance.new("ScreenGui", localPlayer:WaitForChild("PlayerGui"))
+screenGui.Name = "DestructiveEspGui"
+
+-- Create ESP Label
+local espLabel = Instance.new("TextLabel", screenGui)
+espLabel.Size = UDim2.new(0, 200, 0, 50)
+espLabel.Position = UDim2.new(1, -210, 1, -110) -- Position at bottom right
+espLabel.Text = "Destructive ESP"
+espLabel.TextColor3 = Color3.new(1, 0, 0)
+espLabel.BackgroundTransparency = 1
+espLabel.Font = Enum.Font.SourceSansBold
+espLabel.TextSize = 24
+
+-- Create FOV Slider Label
+local fovSliderLabel = Instance.new("TextLabel", screenGui)
+fovSliderLabel.Size = UDim2.new(0, 200, 0, 50)
+fovSliderLabel.Position = UDim2.new(1, -210, 1, -60) -- Position below the ESP label
+fovSliderLabel.Text = "FOV: " .. fov
+fovSliderLabel.TextColor3 = Color3.new(1, 1, 1)
+fovSliderLabel.BackgroundTransparency = 1
+fovSliderLabel.Font = Enum.Font.SourceSansBold
+fovSliderLabel.TextSize = 24
+
+-- Function to create ESP box
+local function createESPBox(player)
+    if player == localPlayer then return end
+
+    -- Create ESP Box
+    local espBox = Drawing.new("Square")
+    espBox.Visible = false
+    espBox.Color = Color3.fromRGB(255, 0, 0)
+    espBox.Thickness = 2
+    espBox.Transparency = 1
+
+    -- Create ESP Distance Text
+    local espDistance = Drawing.new("Text")
+    espDistance.Visible = false
+    espDistance.Color = Color3.fromRGB(255, 255, 255)
+    espDistance.Size = 20
+    espDistance.Center = true
+    espDistance.Outline = true
+
+    -- Create ESP Health Text
+    local espHealth = Drawing.new("Text")
+    espHealth.Visible = false
+    espHealth.Color = Color3.fromRGB(0, 255, 0)
+    espHealth.Size = 20
+    espHealth.Center = true
+    espHealth.Outline = true
+
+    local function update()
+        local character = player.Character
+        if character and character:FindFirstChild("HumanoidRootPart") and character:FindFirstChild("Humanoid") then
+            local rootPart = character.HumanoidRootPart
+            local rootPos, onScreen = camera:WorldToViewportPoint(rootPart.Position)
+            local humanoid = character.Humanoid
+
+            if onScreen then
+                -- Update ESP Box
+                espBox.Size = Vector2.new(2000 / rootPos.Z, 2000 / rootPos.Z)
+                espBox.Position = Vector2.new(rootPos.X - espBox.Size.X / 2, rootPos.Y - espBox.Size.Y / 2)
+                espBox.Visible = true
+
+                -- Update ESP Distance
+                local distance = (localPlayer.Character.HumanoidRootPart.Position - rootPart.Position).Magnitude
+                espDistance.Text = string.format("%.0f studs", distance)
+                espDistance.Position = Vector2.new(rootPos.X, rootPos.Y + espBox.Size.Y / 2 + 15)
+                espDistance.Visible = true
+
+                -- Update ESP Health
+                espHealth.Text = string.format("HP: %.0f", humanoid.Health)
+                espHealth.Position = Vector2.new(rootPos.X, rootPos.Y + espBox.Size.Y / 2 + 35)
+                espHealth.Visible = true
+            else
+                espBox.Visible = false
+                espDistance.Visible = false
+                espHealth.Visible = false
+            end
+        else
+            espBox.Visible = false
+            espDistance.Visible = false
+            espHealth.Visible = false
+        end
+    end
+
+    RunService.RenderStepped:Connect(update)
+end
+
+-- Function to adjust FOV
+local function adjustFOV(input)
+    if input.UserInputType == Enum.UserInputType.MouseWheel then
+        fov = fov + input.Position.Z
+        fov = math.clamp(fov, 10, 120)
+        camera.FieldOfView = fov
+        fovSliderLabel.Text = "FOV: " .. fov
+    end
+end
+
+-- Connect to player events
+Players.PlayerAdded:Connect(createESPBox)
+for _, player in ipairs(Players:GetPlayers()) do
+    createESPBox(player)
+end
+
+-- Connect FOV adjustment
+UserInputService.InputChanged:Connect(adjustFOV)
